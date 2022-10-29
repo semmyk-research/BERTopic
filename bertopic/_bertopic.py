@@ -2428,7 +2428,7 @@ class BERTopic:
                 #representative_docs[topic] = list(np.random.choice(result, 3, replace=False).astype(int))
                 ## Semmyk: get all docs for topic (index in loop)
                 representative_docs[topic] = list(np.random.choice(result, len(result), replace=False).astype(int))
-                #representative_docs[topic] = list(result)
+                #representative_docs[topic] = list(result) 
 
         # Convert indices to documents
         self.representative_docs_ = {topic: [documents.iloc[doc_id].Document for doc_id in doc_ids]
