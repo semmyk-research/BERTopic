@@ -2394,7 +2394,8 @@ class BERTopic:
                               self.topic_representations_.items()}
 
     def _save_representative_docs(self, documents: pd.DataFrame):
-        """ Save the most representative docs (3) per topic
+        """ {del}Save the most representative docs (3) per topic{/del}
+        Save representative docs per topic
 
         The most representative docs are extracted by taking
         the exemplars from the HDBSCAN-generated clusters.
@@ -2423,7 +2424,11 @@ class BERTopic:
                     points = raw_tree['child'][(raw_tree['parent'] == leaf) & (raw_tree['lambda_val'] == max_lambda)]
                     result = np.hstack((result, points))
 
-                representative_docs[topic] = list(np.random.choice(result, 3, replace=False).astype(int))
+                ## randomly select #3 documents for each topics (index in loop) excluding topic -1
+                #representative_docs[topic] = list(np.random.choice(result, 3, replace=False).astype(int))
+                ## Semmyk: get all docs for topic (index in loop)
+                representative_docs[topic] = list(np.random.choice(result, len(result), replace=False).astype(int))
+                #representative_docs[topic] = list(result)
 
         # Convert indices to documents
         self.representative_docs_ = {topic: [documents.iloc[doc_id].Document for doc_id in doc_ids]
