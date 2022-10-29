@@ -2394,8 +2394,7 @@ class BERTopic:
                               self.topic_representations_.items()}
 
     def _save_representative_docs(self, documents: pd.DataFrame):
-        """ {del}Save the most representative docs (3) per topic{/del}
-        Save representative docs per topic
+        """ Save the most representative docs (3) per topic
 
         The most representative docs are extracted by taking
         the exemplars from the HDBSCAN-generated clusters.
@@ -2425,10 +2424,7 @@ class BERTopic:
                     result = np.hstack((result, points))
 
                 ## randomly select #3 documents for each topics (index in loop) excluding topic -1
-                #representative_docs[topic] = list(np.random.choice(result, 3, replace=False).astype(int))
-                ## Semmyk: get all docs for topic (index in loop)
-                representative_docs[topic] = list(np.random.choice(result, len(result), replace=False).astype(int))
-                #representative_docs[topic] = list(result)
+                representative_docs[topic] = list(np.random.choice(result, 3, replace=False).astype(int))
 
         # Convert indices to documents
         self.representative_docs_ = {topic: [documents.iloc[doc_id].Document for doc_id in doc_ids]
@@ -2461,6 +2457,129 @@ class BERTopic:
 
             self.representative_docs_ = updated_representative_docs
             self.representative_docs_.pop(-1, None)
+
+##----- ExtendClass: BERTopicDoc -----##
+## Extend class BERTopic (bertopic.py) to get_topics_docs()
+## where get_topics_docs() retrieves all documents for a topic (or list of topics), display and return dataFrame
+
+## [UPDATE] 29Oct2022
+## Apparently, there is no need to 'extend' __init__ (nor any need for __new__)
+
+## import libraries
+
+# BERTopic
+from bertopic import BERTopic
+
+from bertopic._utils import MyLogger, check_documents_type, check_embeddings_shape, check_is_fitted
+
+
+#import inspect
+import numpy as np
+import pandas as pd
+
+from typing import List, Tuple, Union, Mapping, Any, Callable, Iterable
+
+# Models
+
+## set logging from from bertopic._utils import MyLogger
+logger = MyLogger("WARNING")
+
+class BERTopicDoc(BERTopic):
+    """
+    Currently, as at bertopic 0.12.0, get_representative_docs()
+    randomly retrieves #3 documents for a selected topic.
+    In academic research, in generating topics and clusterring, 
+    it is assistive to map and retrieve documents for each topic/cluster.
+    
+    The benefit of this is that researchers can retrieve articles/abstracts
+    for topics they are interested in from large corpus of literature search result.
+    They can easier map to doi or title or other unique identifies for deeper analysis.
+
+    ##SemmyK: #######
+    ## Researchers should have a dataset that include documents, doi, year, title
+    ## to join the returned get_docs() dataframe to.
+    ## //TODO: Might be expedient to define a function/script for this as well.
+    ## 
+    ## The new function (method) will leverage self.topics_
+    ## 
+    ##SemmyK: ########
+    
+    '''
+    Attributes:
+        topics_ (List[int]) : The topics that are generated for each document after training or updating
+                              the topic model. The most recent topics are tracked.
+    '''
+    """
+    
+        
+    ## SemmyK: creating get_docs with docs to return for chosen topic or list of topics
+    ## PS: I'll consider an arg indicating the amount of docs to return per topic!
+    ## 29 Oct '22
+    def get_docs(self, documents: List[str], topics: List[int] = None, nr_docs: int = None) -> List[str]:
+
+        """ Extract documents for topic
+        Arguments:
+            topics: A specified or range of topic(s) 
+                    for which you want the documents
+            ##//TODO: nr_docs: The number of documents to return
+                    for the specific topic
+        Returns:
+            Dataframe with the topics and documents of the chosen topic
+        
+        Examples:
+        #To extract the docs of all topics:
+        #```python
+        #get_docs = topic_model.get_docs()
+        #```
+        To get the docs of a single topic:
+        ```python
+        get_docs = topic_model.get_docs([12])
+        ```
+        To get the docs of a range of topics:
+        ```python
+        get_docs = topic_model.get_docs([1,2,3])
+        ```
+        """
+        
+        ## list with all document assignments.
+        ## drob-xx | https://github.com/MaartenGr/BERTopic/issues/811
+        
+        ## get list of topics assign to docs
+        docs_topics_list = self.topics_
+        
+        ## get the docs
+        n_docs = documents
+        
+        ## create a dataframe topics assign to docs and corresponding docs
+        docs_topics = pd.DataFrame({'topic': docs_topics_list, 'documents': n_docs})
+        
+        ## topic to get documents for
+        select_topic = topics
+
+        #docs_topics[docs_topics.topic.isin(select_topic)].groupby(['topic']).get_group(4) ## use for single topic
+
+        '''## get the documents grouped by selected list of topics
+        #grouped = docs_topics[docs_topics.topic.isin(select_topic)].groupby(['topic'])
+        #df_docs_topics = pd.concat([grouped.get_group(name) for name in select_topic])'''
+        
+        ## get the documents grouped by selected list of topics
+        df_docs_topics = pd.concat(docs_topics[['topic','documents']].groupby(['topic'], as_index=False).get_group(name) for name in select_topic)
+
+        ## temporary set the pandas dataframe size to display more column content.
+        #with pd.option_context('display.max_colwidth', 500): #None
+        #    display(df_docs_topics)
+        
+        
+        check_is_fitted(self)
+        if isinstance(topics, int):  
+            return df_docs_topics
+        ##TODO
+        #elif isinstance(topic, List[int], nr_docs, int):
+        #    return df_docs_topics
+        else:
+            return docs_topics
+    ##----------------------------------- 
+    
 
     def _create_topic_vectors(self):
         """ Creates embeddings per topics based on their topic representation
