@@ -2458,65 +2458,44 @@ class BERTopic:
             self.representative_docs_ = updated_representative_docs
             self.representative_docs_.pop(-1, None)
 
-##----- ExtendClass: BERTopicDoc -----##
-## Extend class BERTopic (bertopic.py) to get_topics_docs()
-## where get_topics_docs() retrieves all documents for a topic (or list of topics), display and return dataFrame
-
-## [UPDATE] 29Oct2022
-## Apparently, there is no need to 'extend' __init__ (nor any need for __new__)
-
-## import libraries
-
-# BERTopic
-from bertopic import BERTopic
-
-from bertopic._utils import MyLogger, check_documents_type, check_embeddings_shape, check_is_fitted
-
-
-#import inspect
-import numpy as np
-import pandas as pd
-
-from typing import List, Tuple, Union, Mapping, Any, Callable, Iterable
-
-# Models
-
-## set logging from from bertopic._utils import MyLogger
-logger = MyLogger("WARNING")
-
-class BERTopicDoc(BERTopic):
-    """
-    Currently, as at bertopic 0.12.0, get_representative_docs()
-    randomly retrieves #3 documents for a selected topic.
-    In academic research, in generating topics and clusterring, 
-    it is assistive to map and retrieve documents for each topic/cluster.
-    
-    The benefit of this is that researchers can retrieve articles/abstracts
-    for topics they are interested in from large corpus of literature search result.
-    They can easier map to doi or title or other unique identifies for deeper analysis.
-
-    ##SemmyK: #######
-    ## Researchers should have a dataset that include documents, doi, year, title
-    ## to join the returned get_docs() dataframe to.
-    ## //TODO: Might be expedient to define a function/script for this as well.
-    ## 
-    ## The new function (method) will leverage self.topics_
-    ## 
-    ##SemmyK: ########
-    
-    '''
-    Attributes:
-        topics_ (List[int]) : The topics that are generated for each document after training or updating
-                              the topic model. The most recent topics are tracked.
-    '''
-    """
-    
-        
+       
     ## SemmyK: creating get_docs with docs to return for chosen topic or list of topics
     ## PS: I'll consider an arg indicating the amount of docs to return per topic!
     ## 29 Oct '22
     def get_docs(self, documents: List[str], topics: List[int] = None, nr_docs: int = None) -> List[str]:
 
+        ##----- ExtendClass: BERTopicDoc -----##
+        ## Extend class BERTopic (bertopic.py) to get_topics_docs()
+        ## where get_topics_docs() retrieves all documents for a topic (or list of topics), display and return dataFrame
+
+        ## [UPDATE] 29Oct2022
+        ## Apparently, there is no need to 'extend' __init__ (nor any need for __new__)
+        """
+        Currently, as at bertopic 0.12.0, get_representative_docs()
+        randomly retrieves #3 documents for a selected topic.
+        In academic research, in generating topics and clusterring, 
+        it is assistive to map and retrieve documents for each topic/cluster.
+        
+        The benefit of this is that researchers can retrieve articles/abstracts
+        for topics they are interested in from large corpus of literature search result.
+        They can easier map to doi or title or other unique identifies for deeper analysis.
+
+        ##SemmyK: #######
+        ## Researchers should have a dataset that include documents, doi, year, title
+        ## to join the returned get_docs() dataframe to.
+        ## //TODO: Might be expedient to define a function/script for this as well.
+        ## 
+        ## The new function (method) will leverage self.topics_
+        ## 
+        ##SemmyK: ########
+        
+        '''
+        Attributes:
+            topics_ (List[int]) : The topics that are generated for each document after training or updating
+                                the topic model. The most recent topics are tracked.
+        '''
+        """
+        
         """ Extract documents for topic
         Arguments:
             topics: A specified or range of topic(s) 
