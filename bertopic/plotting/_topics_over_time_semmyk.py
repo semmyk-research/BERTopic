@@ -27,6 +27,7 @@ def visualize_topics_over_time(topic_model,
                        `topic_model.set_topic_labels`.
         width: The width of the figure.
         height: The height of the figure.
+        #SemmyK: 17Nov22
         graph_type: The type of graph to visualise. The options are:
                         'line' for default line plot
                         'fill' for filling up (selected) topics to y=0
@@ -46,12 +47,6 @@ def visualize_topics_over_time(topic_model,
     topic_model.visualize_topics_over_time(topics_over_time)
     ```
 
-    To visualize the topics over time in area plot, simply run:
-
-    ```python
-    topic_model.visualize_topics_over_time(topics_over_time, graph_type='area')
-    ```
-
     Or if you want to save the resulting figure:
 
     ```python
@@ -61,10 +56,23 @@ def visualize_topics_over_time(topic_model,
     <iframe src="../../getting_started/visualization/trump.html"
     style="width:1000px; height: 680px; border: 0px;""></iframe>
     """
-    #Default | colors = ["#E69F00", "#56B4E9", "#009E73", "#F0E442", "#D55E00", "#0072B2", "#CC79A7"]
+    #SemmyK: Default | colors = ["#E69F00", "#56B4E9", "#009E73", "#F0E442", "#D55E00", "#0072B2", "#CC79A7"]
     # Select colours for visualising topics
     if colors is None:
         colors = ["#E69F00", "#56B4E9", "#009E73", "#F0E442", "#D55E00", "#0072B2", "#CC79A7"]
+
+    '''
+    #SemmyK: Based on issue #813.
+    #SemmyK: Perhaps, might be easier to use ternary operator directly within fig.add_trace(go.Scatter(...
+    #Prepare trace elements
+    if graph_type is not None:
+        if graph_type == 'fill':
+            draw_fill = 'tozeroy'
+        if graph_type == 'area':
+            draw_group = 'one'
+    else:
+        draw_mode = 'line'
+        '''
 
     # Select topics based on top_n and topics args
     freq_df = topic_model.get_topic_freq()
@@ -96,14 +104,17 @@ def visualize_topics_over_time(topic_model,
         else:
             y = trace_data.Frequency
 
+        '''
+        #SemmyK: 20Nov22
+        '''
         fig.add_trace(go.Scatter(x=trace_data.Timestamp, y=y,
                                  mode = 'lines',
-                                 marker_color = colors[index % len(colors)],    #marker_color=colors[index % 7] #:allow color size per users' colors,
+                                 marker_color = colors[index % len(colors)],    #marker_color=colors[index % 7] #SemmyK: allow color size ,
                                  hoverinfo = "text",
                                  name = topic_name,
-                                 hovertext = [f'<b>Topic {topic}</b><br>Words: {word}' for word in words if len(words)>1], #:if len(words)>1 | insert for safeguard
-                                 fill = 'tozeroy' if graph_type=='fill' else None, #ternary per issue #813
-                                 stackgroup = 'one' if graph_type=='area' else None  #ternary operator per issue #813 for (stack) area plot
+                                 hovertext = [f'<b>Topic {topic}</b><br>Words: {word}' for word in words if len(words)>1], ##SemmyK:  if len(words)>1 | insert for safeguard
+                                 fill = 'tozeroy' if graph_type=='fill' else None, #SemmyK: ternary per issue #813
+                                 stackgroup = 'one' if graph_type=='area' else None  #SemmyK: ternary operator per issue #813 for (stack) area plot
                                  ))
 
     # Styling of the visualization
@@ -124,12 +135,12 @@ def visualize_topics_over_time(topic_model,
         template="simple_white",
         width=width,
         height=height,
-        hovermode='x unified',             ##: single hover label. Has 'side effect' with large selection. 
+        hovermode='x unified',             ##SemmyK: single hover label. Has 'side effect' with large selection. 
         hoverlabel=dict(
-            bgcolor="rgba(0,0,0,.05)",  #"white", ##:adjusted transparency
-            font_size=16,             
+            bgcolor="rgba(0,0,0,.05)",  #"white", ##SemmyK:adjusted transparency
+            font_size=12, #16,             ##SemmyK: lower font #12 works great for me. NB: personal preference
             font_family="Rockwell",
-            bordercolor = "rgba(0,0,0,0)"  ##:remove line border. Visually appealing
+            bordercolor = "rgba(0,0,0,0)"  ##SemmyK:remove line border. Visually appealing
         ),
         legend=dict(
             title="<b>Global Topic Representation",
